@@ -100,46 +100,10 @@ const TreeItem = react_1.default.forwardRef((_a, ref) => {
         else if (ref)
             ref.current = node;
     }, [ref]);
-    // Get all buttons in a container
-    const getActionButtons = react_1.default.useCallback((container) => {
-        if (!container)
-            return [];
-        return Array.from(container.querySelectorAll('button:not([disabled]), [role="button"]:not([aria-disabled="true"])'));
-    }, []);
     const handleActionKeyDown = react_1.default.useCallback((e) => {
         var _a;
         const treeUl = e.currentTarget.closest('ul[role="tree"]');
-        const { key } = e;
-        // Button navigation logic (Tab, ArrowLeft, ArrowRight)
-        if (key === 'ArrowLeft' || key === 'ArrowRight' || key === 'Tab') {
-            const buttons = getActionButtons(e.currentTarget);
-            const currentButton = e.target.closest('button, [role="button"]');
-            const currentIndex = currentButton ? buttons.indexOf(currentButton) : -1;
-            // If there are multiple buttons, try to navigate between them first
-            if (buttons.length > 1 && currentIndex > -1) {
-                const isRtl = treeUl ? getComputedStyle(treeUl).direction === 'rtl' : false;
-                let isNextButton = false;
-                if (key === 'Tab') {
-                    // Tab moves forward, Shift+Tab moves backward
-                    isNextButton = !e.shiftKey;
-                }
-                else {
-                    // Handle RTL/LTR Arrow navigation
-                    isNextButton = (isRtl && key === 'ArrowLeft') || (!isRtl && key === 'ArrowRight');
-                }
-                const nextIndex = isNextButton ? currentIndex + 1 : currentIndex - 1;
-                // If the next button exists, focus it and stop.
-                // (If it doesn't exist, let it fall through to the rest of the code!)
-                if (nextIndex >= 0 && nextIndex < buttons.length) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    buttons[nextIndex].focus();
-                    return;
-                }
-            }
-        }
-        // Button navigation logic (ArrowDown, ArrowUp)
-        if (key === 'ArrowDown' || key === 'ArrowUp') {
+        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
             e.preventDefault();
             e.stopPropagation();
             if (!treeUl) {
@@ -150,7 +114,7 @@ const TreeItem = react_1.default.forwardRef((_a, ref) => {
             const content = li === null || li === void 0 ? void 0 : li.querySelector('.MuiTreeItem-content');
             const allContents = Array.from(treeUl.querySelectorAll('.MuiTreeItem-content')).filter((el) => { return el.offsetParent !== null && !el.classList.contains('Mui-disabled'); });
             const currentIndex = content ? allContents.indexOf(content) : -1;
-            const targetIndex = currentIndex + (key === 'ArrowDown' ? 1 : -1);
+            const targetIndex = currentIndex + (e.key === 'ArrowDown' ? 1 : -1);
             if (currentIndex === -1 || targetIndex < 0 || targetIndex >= allContents.length) {
                 focusTree();
                 return;
@@ -161,13 +125,14 @@ const TreeItem = react_1.default.forwardRef((_a, ref) => {
             const targetLi = allContents[targetIndex].closest('li[role="treeitem"]');
             targetLi === null || targetLi === void 0 ? void 0 : targetLi.focus();
         }
-        else if (key === 'ArrowLeft' || key === 'ArrowRight') {
+        else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
             e.preventDefault();
             e.stopPropagation();
             if (!treeUl) {
                 focusTree();
                 return;
             }
+            const { key } = e;
             // Focus this item's li so MUI sets focusedNodeId to this node,
             // then dispatch the key so MUI's handleKeyDown acts on the correct node.
             const thisLi = e.currentTarget.closest('li[role="treeitem"]');
@@ -176,24 +141,25 @@ const TreeItem = react_1.default.forwardRef((_a, ref) => {
                 treeUl.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
             });
         }
-        else if (key === 'Home' || key === 'End') {
+        else if (e.key === 'Home' || e.key === 'End') {
             e.preventDefault();
             e.stopPropagation();
             if (!treeUl) {
                 focusTree();
                 return;
             }
+            const { key } = e;
             // after handleFocus sets any focusedNodeId (needed to pass MUI's guard).
             treeUl.focus();
             requestAnimationFrame(() => {
                 treeUl.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
             });
         }
-        else if (key === 'Escape') {
+        else if (e.key === 'Escape') {
             e.stopPropagation();
             focusTree();
         }
-        else if (key === 'Tab') {
+        else if (e.key === 'Tab') {
             const li = (_a = e.currentTarget.closest('li[role="treeitem"]')) !== null && _a !== void 0 ? _a : undefined;
             const content = li === null || li === void 0 ? void 0 : li.querySelector('.MuiTreeItem-content');
             if (content) {
@@ -201,7 +167,7 @@ const TreeItem = react_1.default.forwardRef((_a, ref) => {
                 navigateToNextItemAction(e.shiftKey, content);
             }
         }
-    }, [focusTree, navigateToNextItemAction, getActionButtons]);
+    }, [focusTree, navigateToNextItemAction]);
     const contentPaddingLeft = depth > 0 ? 4 + depth * 8 : undefined;
     // Vertical level line sits at the horizontal center of the parent's caret:
     const lineLeft = 11 + depth * 8;
