@@ -46,8 +46,10 @@ exports.TreeItem = exports.getMuiTreeViewThemeOverrides = exports.TreeDepthConte
 const react_1 = __importDefault(require("react"));
 const TreeView_1 = __importDefault(require("@mui/lab/TreeView"));
 require("@mui/lab/themeAugmentation");
+const styles_1 = require("@mui/material/styles");
 const chevron__down_1 = __importDefault(require("@hcl-software/enchanted-icons/dist/carbon/es/chevron--down"));
 const chevron__right_1 = __importDefault(require("@hcl-software/enchanted-icons/dist/carbon/es/chevron--right"));
+const chevron__left_1 = __importDefault(require("@hcl-software/enchanted-icons/dist/carbon/es/chevron--left"));
 const TreeItem_1 = require("./TreeItem");
 var TreeItem_2 = require("./TreeItem");
 Object.defineProperty(exports, "TreeViewContext", { enumerable: true, get: function () { return TreeItem_2.TreeViewContext; } });
@@ -253,6 +255,7 @@ const getMuiTreeViewThemeOverrides = () => {
 exports.getMuiTreeViewThemeOverrides = getMuiTreeViewThemeOverrides;
 const TreeView = react_1.default.forwardRef((props, ref) => {
     const { defaultCollapseIcon, defaultExpandIcon, onMouseLeave, showLevelLine = true, disabled } = props, rest = __rest(props, ["defaultCollapseIcon", "defaultExpandIcon", "onMouseLeave", "showLevelLine", "disabled"]);
+    const theme = (0, styles_1.useTheme)();
     const treeRef = react_1.default.useRef(null);
     // Accordion pattern: ref (not state) so MutationObserver callbacks read it synchronously.
     const isKeyboardNav = react_1.default.useRef(false);
@@ -329,8 +332,15 @@ const TreeView = react_1.default.forwardRef((props, ref) => {
             usingKeyboardRef: isKeyboardNav, focusTree, navigateWithKey, navigateToNextItemAction, showLevelLine, disabled,
         };
     }, [focusTree, navigateWithKey, navigateToNextItemAction, showLevelLine, disabled]);
+    // If the user has not provided a defaultExpandIcon, we will use the default ChevronRight or ChevronLeft icon based on the theme direction.
+    const resolvedExpandIcon = react_1.default.useMemo(() => {
+        if (defaultExpandIcon)
+            return defaultExpandIcon;
+        const ExpandIcon = theme.direction === 'rtl' ? chevron__left_1.default : chevron__right_1.default;
+        return react_1.default.createElement(ExpandIcon, { "data-testid": "treeview-default-expand-icon", "data-icon-direction": theme.direction });
+    }, [defaultExpandIcon, theme.direction]);
     return (react_1.default.createElement(TreeItem_1.TreeViewContext.Provider, { value: contextValue },
-        react_1.default.createElement(TreeView_1.default, Object.assign({ ref: combinedRef, defaultCollapseIcon: defaultCollapseIcon !== null && defaultCollapseIcon !== void 0 ? defaultCollapseIcon : react_1.default.createElement(chevron__down_1.default, null), defaultExpandIcon: defaultExpandIcon !== null && defaultExpandIcon !== void 0 ? defaultExpandIcon : react_1.default.createElement(chevron__right_1.default, null), onMouseLeave: handleMouseLeave, onKeyDown: handleKeyDown }, rest))));
+        react_1.default.createElement(TreeView_1.default, Object.assign({ ref: combinedRef, defaultCollapseIcon: defaultCollapseIcon !== null && defaultCollapseIcon !== void 0 ? defaultCollapseIcon : react_1.default.createElement(chevron__down_1.default, null), defaultExpandIcon: resolvedExpandIcon, onMouseLeave: handleMouseLeave, onKeyDown: handleKeyDown }, rest))));
 });
 TreeView.displayName = 'TreeView';
 __exportStar(require("@mui/lab/TreeView"), exports);
